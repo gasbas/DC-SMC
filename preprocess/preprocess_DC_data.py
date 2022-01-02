@@ -27,7 +27,7 @@ def process_data(load_path, replacements_path = 'replacements.json', year = '') 
         
     df_copy['School Name'] = school_names    
     
-    df_copy = df_copy[['School Ward', 'LEA Name', 'School Name','% 3+', 'Total  Valid Test Takers']]
+    df_copy = df_copy[['School Ward', 'School Name','% 3+', 'Total  Valid Test Takers']]
     target = [float(i[:4])/100 for i in df_copy['% 3+'].values]
     df_copy.rename(columns={'Total  Valid Test Takers':'trials'},inplace=True)
     df_copy['trials'] = df_copy['trials'].astype(int)
@@ -54,25 +54,21 @@ if __name__ == '__main__' :
         return {val : s_id for s_id,val in zip([i for i in range(len(data_to_encode))], data_to_encode)}
 
     school_ids = label_encode(df['School Name'].unique())
-    LEA_ids = label_encode(df['LEA Name'].unique())
     ward_ids = label_encode(df['School Ward'].unique())
 
     df['school_id'] = df['School Name'].apply(lambda x: school_ids[x])
-    df['lea_id'] = df['LEA Name'].apply(lambda x: LEA_ids[x])
     df['ward_id'] = df['School Ward'].apply(lambda x: ward_ids[x])
 
-    df.drop(['School Name', 'LEA Name', 'School Ward'],axis=1,inplace=True)
+    df.drop(['School Name', 'School Ward'],axis=1,inplace=True)
 
     #Saving final dataframe
 
-    final_df = df.sort_values(['school_id','lea_id','ward_id','year'])
+    final_df = df.sort_values(['school_id','ward_id','year'])
 
     final_df.to_csv('preprocessed_DC_data.csv',index=False)
 
     #Saving label encondigs to json files for later use
     with open('schools.json','w') as f :
         json.dump(school_ids,f)
-    with open('LEA.json','w') as f :
-        json.dump(LEA_ids,f)
     with open('wards.json','w') as f :
         json.dump(ward_ids,f)
