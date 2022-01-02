@@ -27,9 +27,11 @@ def process_data(load_path, replacements_path = 'replacements.json', year = '') 
         
     df_copy['School Name'] = school_names    
     
-    df_copy = df_copy[['School Ward', 'LEA Name', 'School Name','% 3+']]
+    df_copy = df_copy[['School Ward', 'LEA Name', 'School Name','% 3+', 'Total  Valid Test Takers']]
     target = [float(i[:4])/100 for i in df_copy['% 3+'].values]
-    df_copy[f'target'] = target
+    df_copy.rename(columns={'Total  Valid Test Takers':'trials'},inplace=True)
+    df_copy['trials'] = df_copy['trials'].astype(int)
+    df_copy['successes'] = (target * df_copy['trials']).astype(int)
     df_copy['year'] = year
     return df_copy.reset_index(drop=True).drop('% 3+',axis=1)
 
