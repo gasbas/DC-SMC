@@ -9,51 +9,66 @@ import networkx as nx
 
 
 def build_tree(df) : 
-
+    """
+    Builds a NetworkX tree (directed graph from root to leaves) based on hierarchical data. Data is supposed to be
+    sorted from hierarchical order where the first column should be the first hierarchical order.
+    The last column is supposed to be the number of succeses and the second last is supposed to be the number of 
+    trials.
+    ----------
+    Params
+    df: pandas.DataFrame
+    ----------
+    Returns
+    (networkx.DiGraph, int, int): the created tree T, the total number of test trials and the total number of succeses.
+    """
+    
     T = nx.DiGraph()
     T.add_node('root')
+    
     n_obs=0
     n_successes = 0
     n_total_attempts = 0
-
-    for ward in df['ward_id'].unique() : 
-        T.add_node(str(ward))
-        T.add_edge('root', str(ward))
-        tmp_final = df[df['ward_id']==ward]
-            
-        for s_id in tmp_final['school_id'].unique() :
-            
-            name2 = str(ward) + '_'+str(s_id)
-            T.add_node(name2)
-            T.add_edge(str(ward), name2)
-            tmp_final2 = tmp_final[tmp_final['school_id']==s_id]
+    
+    n_levels = len(df.iloc[:,:-2].columns)
+    
+    for idx in range(df.shape[0]) : 
+        parent = 'root' 
+        curr = df.iloc[idx,:-2]
+        for level in range(n_levels) : 
+            name = str(parent)+'_'+str(curr.iloc[0])
+  
+            T.add_node(name)
+            T.add_edge(parent, name)
+            parent = name
+            if curr.shape[0] > 1 : 
+                curr = curr.iloc[1:]
+            else : 
+                T.nodes[name]['trials'] = df.iloc[idx,-2]
+                T.nodes[name]['successes'] = df.iloc[idx,-1]
+                n_total_attempts += T.nodes[name]['trials']
+                n_successes += T.nodes[name]['successes']
+                n_obs += 1
                 
-            for year in tmp_final2['year'].unique() :
-                
-                name3 = name2 + '_'+str(n_obs)
-                
-                T.add_node(name3)
-                successes = tmp_final2[tmp_final2['year']==year]['successes'].values[0]
-                T.nodes[name3]['successes'] = successes
-                n_successes += successes
-                
-                attempts = tmp_final2[tmp_final2['year']==year]['trials'].values[0]
-                T.nodes[name3]['trials'] = attempts
-                n_total_attempts+= attempts
-                T.add_edge(name2, name3)
-                
-                n_obs+=1
-                
+    print(f'Number of hierarchical levels: {n_levels}')
     print(f'Number of leaf nodes: {n_obs}')
     print(f'Number of test instances in the dataset: {n_total_attempts}')
     print(f'Number of successes in the dataset: {n_successes}')
     
     return T, n_obs, n_total_attempts, n_successes
 
-
-
 class TreeDataset : 
+    """
+    A wrapper to access useful methods specifics to trees. Builds a networkX tree (Directed graph from to the root
+    down to the leaves) based on hierarchical data.Data is supposed to be
+    sorted from hierarchical order where the first column should be the first hierarchical order.
+    The last column is supposed to be the number of succeses and the second last is supposed to be the number of 
+    trials.
+    ----------
+    Init
+    data_path: str, path to the hierarchical data stored in a csv file.
+    ----------
     
+    """
     def __init__(self, data_path) : 
         df = pd.read_csv(data_path)
         self.T, self.n_leaf_nodes, self.n_attempts, self.n_successes_ = build_tree(df)
@@ -93,10 +108,15 @@ class TreeDataset :
         self.recur_order('root', result)
         return result
     
-    def plot(self) : 
+    def plot(self, show_label = False, save_path = None) : 
         plt.figure(figsize=(16,10))
+        plt.axis('off')
         pos = graphviz_layout(self.T, prog="dot")
+        
         #nx.draw(T, pos)
-        v=nx.draw_networkx_nodes(self.T,pos)
-        v=nx.draw_networkx_edges(self.T,pos)
-        v=nx.draw_networkx_labels(self.T,pos)
+        v=nx.draw_networkx_nodes(self.T,pos, node_color = 'grey', alpha = 0.7)
+        v=nx.draw_networkx_edges(self.T,pos,width = 0.8, alpha = 0.7)
+        if show_label : 
+            v=nx.draw_networkx_labels(self.T,pos)
+        if save_path : 
+            plt.savefig(save_path, dpi = 300)
