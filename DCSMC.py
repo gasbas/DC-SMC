@@ -31,7 +31,8 @@ class DC_SMC :
         for i in range(max_posterior_level+1) : 
             self.posterior[i] = {}
         self.max_posterior_level = max_posterior_level
-        
+        self.ess = []
+
     def draw_sample(self) :
         """
         Recursion of the DC-SMC algorithm presented in the paper over all the nodes of the tree.
@@ -113,9 +114,11 @@ class DC_SMC :
         logZ += log_norm - np.log(self.n_particles)
         
         #Calcualtes ess
-        ess = self.ess(result.probabilities)
+        ess = self.get_ess(result.probabilities)
         relative_ess = ess / self.n_particles
-        
+        if 1-relative_ess > 0.001 : 
+            self.ess.append(ess)
+
         #Resample only if inferior to ess threshold
         if ess < self.ess_threshold : 
             result = self.resample(result)
@@ -124,7 +127,7 @@ class DC_SMC :
         if self.tree.T.nodes[node]['level'] <= self.max_posterior_level : 
             theta_stats = self.get_theta_stat(node, result.particles)
             sigma_stats = self.get_delta_stat(node, result.particles)
-            self.posterior[self.tree.T.nodes[node]['level']][node] = {'theta' : theta_stats, 'sigma' : sigma_stats}
+            self.posterior[self.tree.T.nodes[node]['level']][node] = {'theta' : theta_stats, 'delta' : sigma_stats}
         
         #Print iteration
         print(f'NODE : {node}, ESS : {ess}, RESS : {relative_ess}' )
@@ -139,7 +142,7 @@ class DC_SMC :
         
         return result
         
-    def ess(self, weights) : 
+    def get_ess(self, weights) : 
         """Calculates Effective Sample Size"""
         return 1/(np.sum(np.square(weights)))
     
@@ -175,7 +178,7 @@ class DC_SMC :
             mean_samples.append(mean_point)
             if len(children) != 0 :
                 variance_samples.append(particle.variance)
-        return {'mean' : mean_samples, 'natural' : samples, 'variance' : variance_samples}
+        return {'mean' : mean_samples, 'samples' : samples, 'variance' : variance_samples}
     
     def get_delta_stat(self, node, particles) : 
         """Get statistics of delta posterior distriubtion at a given node""" 
@@ -190,7 +193,9 @@ class DC_SMC :
                 transformed_child = inverse_transform(combined_sample[c])
                 delta = transformed_child - transformed_root
                 delta_samples[c][i] = delta
-        return delta_samples
+
+            
+        return {'mean' : delta_samples.mean(), 'std' : np.std(delta_samples), 'samples' : delta_samples.mean(axis = 0)}
         
         
     def sample_children_jointly(self,particle) :
@@ -204,14 +209,3 @@ class DC_SMC :
             result.append(updated_message.message[0] + np.random.randn()*np.sqrt(updated_message.message_variance))
         result.append(root_sample)
         return result
-    
-        #sns.displot(mean_samples, kind="kde")
-        #plt.savefig(f'results/{node}_logsitic_mean.png')
-        #plt.close()
-        #plt.hist(samples)
-        #plt.savefig(f'results/{node}_natural_point.png')
-        #plt.close()
-        #if len(variance_samples) >0 : 
-        #    plt.hist(variance_samples)
-        #    plt.savefig(f'results/{node}_var.png')
-        #    plt.close()
