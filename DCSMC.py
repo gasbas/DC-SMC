@@ -18,10 +18,11 @@ class DC_SMC :
         this number.
     - exp_prior_lambda: int, the lambda parameter of the prior over sigma (Exponential distribution).
     """
-    def __init__(self, tree, n_particles, exp_prior_lambda = 1, ess_threshold = "default", max_posterior_level = 0) :
+    def __init__(self, tree, n_particles, exp_prior_lambda = 1, ess_threshold = "default", max_posterior_level = 0, seed = 1) :
         self.tree = tree
         self.n_particles = n_particles
         self.exp_prior_lambda = exp_prior_lambda
+        self.seed = seed
         if ess_threshold == 'default' : 
             self.ess_threshold = n_particles/2
         else : 
@@ -38,6 +39,7 @@ class DC_SMC :
         Recursion of the DC-SMC algorithm presented in the paper over all the nodes of the tree.
         Note that even the function starts from the root, the algorithm will start sampling when reching a leaf node.
         """
+        np.random.seed(self.seed)
         result = self.recurse(self.tree.get_root()[0])
         print(f'LogZ hat: {result.log_Z_hat}')
         return result
@@ -195,7 +197,7 @@ class DC_SMC :
                 delta_samples[c][i] = delta
 
             
-        return {'mean' : delta_samples.mean(), 'std' : np.std(delta_samples), 'samples' : delta_samples.mean(axis = 0)}
+        return {'mean' : delta_samples.mean(), 'variance' : np.var(delta_samples), 'samples' : delta_samples.mean(axis=0)}
         
         
     def sample_children_jointly(self,particle) :
