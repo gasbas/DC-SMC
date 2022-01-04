@@ -24,12 +24,12 @@ def build_tree(df) :
     
     T = nx.DiGraph()
     T.add_node('root')
-    
+    T.nodes['root']['level'] = 0
     n_obs=0
     n_successes = 0
     n_total_attempts = 0
     
-    n_levels = len(df.iloc[:,:-2].columns)
+    n_levels = len(df.iloc[:,:-2].columns) + 1
     
     for idx in range(df.shape[0]) : 
         parent = 'root' 
@@ -39,6 +39,7 @@ def build_tree(df) :
   
             T.add_node(name)
             T.add_edge(parent, name)
+            T.nodes[name]['level'] = level + 1
             parent = name
             if curr.shape[0] > 1 : 
                 curr = curr.iloc[1:]
@@ -48,6 +49,7 @@ def build_tree(df) :
                 n_total_attempts += T.nodes[name]['trials']
                 n_successes += T.nodes[name]['successes']
                 n_obs += 1
+            
                 
     print(f'Number of hierarchical levels: {n_levels}')
     print(f'Number of leaf nodes: {n_obs}')

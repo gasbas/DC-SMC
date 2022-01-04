@@ -64,7 +64,7 @@ if __name__ == '__main__' :
     #Saving final dataframe
 
     final_df = df.sort_values(['school_id','ward_id','year'])
-
+    final_df = final_df[['ward_id','school_id','year','trials','successes']]
     final_df.to_csv('preprocessed_DC_data.csv',index=False)
 
     #Saving label encondigs to json files for later use
