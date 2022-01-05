@@ -34,7 +34,7 @@ def build_tree(df) :
     for idx in range(df.shape[0]) : 
         parent = 'root' 
         curr = df.iloc[idx,:-2]
-        for level in range(n_levels) : 
+        for level in range(n_levels -1) : 
             name = str(parent)+'_'+str(curr.iloc[0])
   
             T.add_node(name)

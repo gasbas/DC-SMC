@@ -139,16 +139,22 @@ def plot_posterior(posterior_data, target_posterior = 'theta', target_func = 'me
     fig,ax = plt.subplots(len(tmp), n_cols, figsize = (12,6), sharex=True, sharey=True)
     if not isinstance(posterior_data, list) :  
         ax = [ax]
-        
+    if n_cols == 1 : 
+        ax = [ax]
     colors = ['orange','green','grey','red','blue']
     
-        
+    if target_func == 'variance' : 
+        plt.xlim(left = -0.5, right = 5.5) 
+        plt.xticks([0,5])
+        plt.ylim(top = 3.5)
+        plt.yticks([0,1,2,3])
     row_names = [None]*len(tmp) if row_names == None else row_names
     if len(row_names) < len(tmp) : 
         row_names += [None] * len(tmp) - len(row_names)
-    if any([col_names is None, len(col_names) != n_cols]) : 
-        col_names = [None]*n_cols 
-    
+    col_names = [None]*n_cols if col_names == None else col_names
+    if len(col_names) < len(tmp) : 
+        col_names += [None] * n_cols - len(col_names)
+
     ax[-1][0].set_xlabel(list(tmp[idx][0].keys())[0], fontsize = 12)
 
     for idx in range(len(tmp)) :
@@ -179,7 +185,7 @@ def plot_posterior(posterior_data, target_posterior = 'theta', target_func = 'me
             else : 
                 ax[idx][level+1].tick_params(axis = 'x', width = 1.5)
 
-    plt.subplots_adjust(wspace=0.05, hspace=0.05)
+    plt.subplots_adjust(wspace=0.2, hspace=0.05)
     
     if save_path is not None : 
         plt.savefig(save_path + f'{target_posterior}_{target_func}_plot.png', dpi = 300)

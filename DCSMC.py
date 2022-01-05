@@ -78,7 +78,7 @@ class DC_SMC :
                 #print(sample.log_Z_hat)
             for idx in range(self.n_particles) : 
                 
-                var = self.sample_variance()
+                var = self.sample_variance(self.exp_prior_lambda)
                 sample_calculators, children_nodes = [], []
                 desc_logL = 0
                 desc_var = self.variance_log_prior(var)
@@ -159,7 +159,7 @@ class DC_SMC :
     def resample(self, particle_approx) : 
         """Multinomial resampling"""
         resampled_res = StandardParticleApprox(self.n_particles)
-        resampled_index = np.random.choice([i for i in range(self.n_particles)], size = self.n_particles)
+        resampled_index = np.random.choice([i for i in range(self.n_particles)], size = self.n_particles, p = particle_approx.probabilities)
         
         for idx in range(self.n_particles) : 
             resampled_res.particles[idx] = particle_approx.particles[resampled_index[idx]]
@@ -173,7 +173,7 @@ class DC_SMC :
         children = self.tree.get_child(node)
         mean_samples, samples, variance_samples = [], [], []
         for idx in range(self.n_particles) : 
-            particle = particles[idx]
+            particle = particles[idx % self.n_particles]
             point = particle.sample()
             mean_point = inverse_transform(point) 
             samples.append(point)

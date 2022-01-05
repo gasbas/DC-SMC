@@ -125,11 +125,11 @@ class StandardParticleApprox :
         self.probabilities = 1/(np.ones(n_particles)*n_particles)
         
     def sample(self) : 
-        index = np.argmax(np.random.multinomial(1,self.probabilities))
+        index = np.random.choice([i for i in range(len(self.particles))], size = 1, p = self.probabilities)[0]
         return self.particles[index]
     
     def sample_logdensity(self) : 
-        index = np.argmax(np.random.multinomial(1,self.probabilities))
+        index = np.random.choice([i for i in range(len(self.particles))], size = 1, p = self.probabilities)[0]
         return self.particles[index].log_density()
     
 

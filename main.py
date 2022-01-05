@@ -58,7 +58,8 @@ if __name__ == '__main__' :
     result = model.draw_sample()
     all_results.append(result)
     all_posteriors.append(model.posterior)
-    
+
+
     ### Plotting results
     print('\n\nPLOTTING POSTERIOR DISTRIBUTIONS')
 
