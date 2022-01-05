@@ -58,7 +58,7 @@ if __name__ == '__main__' :
     result = model.draw_sample()
     all_results.append(result)
     all_posteriors.append(model.posterior)
-
+    
     ### Plotting results
     print('\n\nPLOTTING POSTERIOR DISTRIBUTIONS')
 
@@ -88,6 +88,17 @@ if __name__ == '__main__' :
     delta_desc.to_csv(os.path.join(args.save_path,'tables','delta_stat_desc.csv'),index = False)
     delta_samples.to_csv(os.path.join(args.save_path,'tables','delta_samples.csv'),index = False)
 
+    samples_LL = []
+    for idx in range(10000) : 
+        samples_LL.append(result.sample_logdensity())
+    df = pd.DataFrame({'LL_min' : np.min(samples_LL),
+                       'LL_max' : np.max(samples_LL),
+                       'LL_mean' : np.mean(samples_LL),
+                       'LL_std' : np.std(samples_LL)},
+                       index = [0])
+
+    df.to_csv(os.path.join(args.save_path,'tables','LL_summary.csv'), index = False)
+
     del model,result, all_results, all_posteriors
 
     ### Step 2. Simulating to get uncertainity estimate on Log Z hat
@@ -96,7 +107,7 @@ if __name__ == '__main__' :
     all_log_Z = np.zeros(args.n_sim)
 
     for iteration in range(args.n_sim) : 
-        print('\n\n-------------------------- ITERATION {iteration} -------------------------\n\n')
+        print(f'\n\n-------------------------- ITERATION {iteration} -------------------------\n\n')
         model = DC_SMC(tree, args.n_particles, exp_prior_lambda = args.exp_prior, ess_threshold=args.ess_threshold, seed = iteration)
         result = model.draw_sample()
         all_log_Z[iteration] = result.log_Z_hat
