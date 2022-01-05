@@ -1,6 +1,6 @@
 # Divide & Conquer Sequential Monte Carlo
 
-Project for the Hidden Markov Models course at M2 Data-Science, Institut Polytechnique de Paris. We applied Divide & Conquer SMC algorithm to hierarchical data as presented in Section 5.2 of the original paper ((https://arxiv.org/abs/1406.4993).
+Project for the Hidden Markov Models course at M2 Data-Science, Institut Polytechnique de Paris. We applied Divide & Conquer SMC algorithm to hierarchical data as presented in Section 5.2 of the original paper (https://arxiv.org/abs/1406.4993).
 
 # Installation
 
@@ -39,8 +39,8 @@ python main.py --data_path XXX --save_path XXX --n_particles XXX --n_sim XXX
 - *data_path* is the path to the preprocessed data.
 -  *save_path* is the path where the results will be stored.
 -  *n_particles* is the number of particles to use during the simulations. Default to 10000
--  *n_sim* is the number of simulations to calculate variability over $\log \hat{Z}$.
--  *exp_prior* is the $\lambda$ in $\mathcal{E}(\lambda)$ used as a prior for $\sigma_t$.
+-  *n_sim* is the number of simulations to calculate variability over Log Z hat.
+-  *exp_prior* is the parameter of the Exponential distribution used as a prior for sigma.
 -   *ess_threshold* refers to the threshold used for resampling. Default to n_particles/2
 
 
